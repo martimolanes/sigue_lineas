@@ -19,19 +19,17 @@ from PyQt5.QtWidgets import (
 )
 
 class Car(QGraphicsRectItem):
-    def __init__(self):
-        self.width = 10
-        self.height = 50
-        super().__init__(0, 0, self.width, self.height)
-        self.setPos(50, 20)
+    def __init__(self, width, height):
+        super().__init__(0, 0, width, height)
+        self.setPos(0, 0)
         brush = QBrush(Qt.red)
         self.setBrush(brush)
         self.setTransformOriginPoint(self.boundingRect().center())
+        self.setRotation(60)
 
     def update(self):
-        self.setRotation(-90)
-        #self.setRotation(self.rotation() + 1)
-        self.move_forward(1, self.get_corners())
+        # self.setRotation(self.rotation() + 3)
+        self.move_forward(5, self.get_corners())
 
     def get_corners(self) -> list[tuple[float, float]]:
         x, y, width, height = self.boundingRect().getRect()
@@ -48,6 +46,19 @@ class Car(QGraphicsRectItem):
         return [top_left, top_right, bottom_left, bottom_right]
 
     def move_forward(self, dist, corners):
+        if min_x(corners) < 0:
+            self.setRotation((180 - self.rotation()) % 360)
+            self.setX(max_x(corners))
+        if max_x(corners) > 400:
+            self.setRotation((180 - self.rotation()) % 360)
+            self.setX(min_x(corners))
+        if min_y(corners) < 0:
+            self.setRotation((360 - self.rotation()) % 360)
+            self.setY(max_y(corners))
+        if max_y(corners) > 200:
+            self.setRotation((360 - self.rotation()) % 360)
+            self.setY(min_y(corners))
+        
         # Convert the orientation angle to radians
         theta_rad = np.deg2rad(self.rotation())
         # Calculate the movement vector
@@ -55,21 +66,6 @@ class Car(QGraphicsRectItem):
         
         # Update the rectangle's position
         new_x, new_y = self.x() + dx, self.y() + dy
-        
-        print(min_x(corners))
-        
-        if min_x(corners) < 0:
-            new_x = 0
-            self.setRotation(180 - self.rotation())
-        if max_x(corners) > 400:
-            new_x = 400
-            self.setRotation(180 - self.rotation())
-        if min_y(corners) < 0:
-            new_y = 0
-            self.setRotation(180 - self.rotation())
-        if max_y(corners) > 200:
-            new_y = 180
-            self.setRotation(360 - self.rotation())
         self.setX(new_x) 
         self.setY(new_y)
 
@@ -84,6 +80,7 @@ def max_x(corners):
     max = -np.Inf
     for corner in corners:
         if corner[0] > max:
+            print(str(corner[0]))
             max = corner[0]
     return max
 
@@ -110,7 +107,7 @@ class CarTrack(QWidget):
         self.scene = QGraphicsScene(0, 0, 400, 200)
 
         # Draw a Car
-        car = Car()
+        car = Car(30, 30)
 
         # Add the items to the scene. Items are stacked in the order they are added.
         self.scene.addItem(car)
@@ -125,7 +122,7 @@ class CarTrack(QWidget):
 
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update)
-        self.timer.start(17)
+        self.timer.start(100)
 
         hbox = QHBoxLayout(self)
         hbox.addWidget(view)
@@ -136,30 +133,6 @@ class CarTrack(QWidget):
     def update(self):
         for item in self.scene.items():
             item.update()
-
-    def up(self):
-        """ Iterate all selected items in the view, moving them forward. """
-        items = self.scene.selectedItems()
-        for item in items:
-            z = item.zValue()
-            item.setZValue(z + 1)
-
-    def down(self):
-        """ Iterate all selected items in the view, moving them backward. """
-        items = self.scene.selectedItems()
-        for item in items:
-            z = item.zValue()
-            item.setZValue(z - 1)
-
-    def rotate(self):
-        """ Rotate the object by the received number of degrees """
-        items = self.scene.items()
-        for item in items:
-            value = item.rotation() + 10
-            print(value)
-            item.setTransformOriginPoint(item.boundingRect().center())
-            item.setRotation(value)
-
 
 def display():
     print("Hello World")
