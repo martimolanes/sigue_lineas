@@ -19,7 +19,7 @@ setup(
     zip_safe=True,
     maintainer='francorbacho',
     maintainer_email='fran.corbachoflores@gmail.com',
-    description='TODO: Package description',
+    description='Launches all necessary nodes to start the simulation',
     license='TODO: License declaration',
     tests_require=['pytest'],
     entry_points={

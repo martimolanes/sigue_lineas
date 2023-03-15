@@ -13,9 +13,9 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='driverless',
+    maintainer='francorbacho',
     maintainer_email='fran.corbachoflores@gmail.com',
-    description='TODO: Package description',
+    description='Qt-based interface for the simulation',
     license='TODO: License declaration',
     tests_require=['pytest'],
     entry_points={

@@ -3,8 +3,8 @@
 <package format="3">
   <name>driverless</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="fran.corbachoflores@gmail.com">driverless</maintainer>
+  <description>Handles autonomous driving logic</description>
+  <maintainer email="fran.corbachoflores@gmail.com">francorbacho</maintainer>
   <license>TODO: License declaration</license>
 
   <depend>rlcpy</depend>
