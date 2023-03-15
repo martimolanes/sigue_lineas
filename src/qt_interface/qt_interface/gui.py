@@ -1,6 +1,5 @@
 import sys
 import numpy as np
-import random as rd
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
@@ -30,9 +29,9 @@ class Car(QGraphicsRectItem):
 
     def get_corners(self) -> list[tuple[float, float]]:
         x, y, width, height = self.boundingRect().getRect()
-        
+
         theta_rad = np.deg2rad(self.rotation())
-       
+
         # Calculate the movement vector
         top_left = self.x(), self.y()
         top_right = self.x() + width * np.cos(theta_rad), self.y() + width * np.sin(theta_rad)
@@ -54,12 +53,12 @@ class Car(QGraphicsRectItem):
         if max_y(corners) > 500:
             self.setRotation((360 - self.rotation()) % 360)
             self.setY(min_y(corners))
-        
+
         # Convert the orientation angle to radians
         theta_rad = np.deg2rad(self.rotation())
         # Calculate the movement vector
         dx, dy = dist * np.cos(theta_rad), dist * np.sin(theta_rad)
-        
+
         # Update the rectangle's position
         new_x, new_y = self.x() + dx, self.y() + dy
         self.setX(new_x) 
@@ -71,7 +70,7 @@ def min_x(corners):
         if corner[0] < min:
             min = corner[0]
     return min
-        
+
 def max_x(corners):
     max = -np.Inf
     for corner in corners:
@@ -95,25 +94,19 @@ def max_y(corners):
 
 
 class CarTrack(QWidget):
-    def __init__(self):
+    def __init__(self, ros_queue):
         super().__init__()
+
+        # We use this queue to send messages from ROS. Specifically, to send initial
+        # waypoint configuration.
+        self.ros_queue = ros_queue
+        self.waypoint_drawing_pen = QPen(QColor("black"), 4)
 
         # Defining a scene rect of 400x200
         self.scene = QGraphicsScene(0, 0, 800, 500)
 
         # Draw a Car
         car = Car(30, 30)
-
-        pen = QPen(QColor("black"), 4)
-
-        coordinates = []
-
-        # create a small ellipse item to simulate a point
-        for i in range(12):
-            random_x = rd.randint(25, 775)
-            random_y = rd.randint(25, 475)
-            point = self.scene.addEllipse(random_x, random_y, 1, 1, pen)
-            coordinates.append((random_x, random_y))
 
         # Add the items to the scene. Items are stacked in the order they are added.
         self.scene.addItem(car)
@@ -135,12 +128,20 @@ class CarTrack(QWidget):
 
         self.setLayout(hbox)
 
+    def initialize_waypoints(self, waypoints):
+        for waypoint in waypoints:
+            self.scene.addEllipse(waypoint.x, waypoint.y, 1, 1, self.waypoint_drawing_pen)
+
     def update(self):
+        if not self.ros_queue.empty():
+            self.initialize_waypoints(self.ros_queue.get())
+
         for item in self.scene.items():
             item.update()
 
-def qt_main():
+
+def qt_main(in_queue):
     app = QApplication(sys.argv)
-    w = CarTrack()
+    w = CarTrack(in_queue)
     w.show()
     app.exec()
