@@ -146,10 +146,10 @@ class CarTrack(QWidget):
 def display():
     print("Hello World")
 
-app = QApplication(sys.argv)
 
-w = CarTrack()
-w.show()
-
-app.exec()
+def main(args=None):
+    app = QApplication(sys.argv)
+    w = CarTrack()
+    w.show()
+    app.exec()
 
