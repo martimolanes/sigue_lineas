@@ -1,1 +1,1 @@
-int32 angles_in_degrees
+float64 delta_direction

@@ -16,6 +16,9 @@ from PyQt5.QtWidgets import (
 
 from qt_interface.communication import Message, INITIAL_WAYPOINT_CONFIG, UPDATE_CAR_POSITION
 
+CAR_WIDTH = 20
+CAR_HEIGHT = 40
+
 class Car(QGraphicsRectItem):
     def __init__(self, width, height):
         super().__init__(0, 0, width, height)
@@ -103,8 +106,9 @@ class CarTrack(QWidget):
         self.scene = QGraphicsScene(0, 0, 800, 500)
 
         # Draw a Car
-        car = Car(30, 30)
+        car = Car(CAR_HEIGHT, CAR_WIDTH)
         self.car = car
+        self.car.setTransformOriginPoint(self.car.boundingRect().center())
 
         # Add the items to the scene. Items are stacked in the order they are added.
         self.scene.addItem(car)
@@ -140,10 +144,15 @@ class CarTrack(QWidget):
     def update_car_position(self, car_position):
         x = int(car_position.x + self.scene.width() // 2)
         y = int(-car_position.y + self.scene.height() // 2)
+        angle = car_position.direction * 180 / np.pi
+
+        # TODO: Center the coordinates on the center of the car instead of top-left corner.
+
+        self.scene.addEllipse(x, y, 1, 1, self.waypoint_drawing_pen)
 
         self.car.setX(x)
         self.car.setY(y)
-        self.car.setRotation(int(car_position.direction))
+        self.car.setRotation(angle)
 
     def initialize_waypoints(self, waypoints):
         for waypoint in waypoints:

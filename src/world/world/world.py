@@ -2,8 +2,10 @@ import rclpy
 from rclpy.node import Node
 import numpy as np
 
-from um_msgs.msg import Waypoints, Waypoint, CarPosition
+from um_msgs.msg import Waypoints, Waypoint, CarPosition, SteeringCommand
 from world.car import Car
+
+MIN_WAYPOINT_DISTANCE_SQUARED_TO_CAR = 100.0 ** 2
 
 class World(Node):
     def __init__(self):
@@ -11,7 +13,7 @@ class World(Node):
         self.get_logger().info('car_node node started')
 
         self.car = Car()
-        self.points = []
+        self.waypoints = []
         self.generate_waypoints()
 
         self.waypoint_publisher = self.create_publisher(Waypoints, '/world_waypoints', 10)
@@ -19,6 +21,9 @@ class World(Node):
 
         self.loop_timer = self.create_timer(1.0 / 30.0, self.tick)
         self.car_position_publisher = self.create_publisher(CarPosition, '/car_position', 10)
+        self.sensed_waypoints_publisher = self.create_publisher(Waypoints, '/sensed_waypoints', 10)
+
+        self.cmd_direction_subscriber = self.create_subscription(SteeringCommand, '/cmd', self.on_cmd, 10)
 
     def generate_waypoints(self):
         width = 350
@@ -31,16 +36,17 @@ class World(Node):
             x = np.cos(angle_step * i) * width
             y = np.sin(angle_step * i) * height
 
-            self.points.append(Waypoint(x=x, y=y, idx=i))
+            self.waypoints.append(Waypoint(x=x, y=y, idx=i))
 
     def publish_waypoints(self):
         if self.waypoint_publisher.get_subscription_count() >= 1:
-            msg = Waypoints(waypoints=self.points)
+            msg = Waypoints(waypoints=self.waypoints)
             self.waypoint_publisher.publish(msg)
 
     def tick(self):
         self.update_physics()
         self.publish_car_position()
+        self.publish_car_sensed_waypoints()
 
     def update_physics(self):
         self.car.update()
@@ -48,6 +54,30 @@ class World(Node):
     def publish_car_position(self):
         msg = CarPosition(x=self.car.position[0], y=self.car.position[1], direction=self.car.direction)
         self.car_position_publisher.publish(msg)
+
+    def publish_car_sensed_waypoints(self):
+        # Publish waypoints that are near the car. This is done to simulate a
+        # some kind of **sensor** in real life.
+
+        sensed_waypoints = []
+
+        for waypoint in self.waypoints:
+            distance_sq = \
+                (waypoint.x - self.car.position[0]) ** 2 + \
+                (waypoint.y - self.car.position[1]) ** 2
+
+            if distance_sq < MIN_WAYPOINT_DISTANCE_SQUARED_TO_CAR:
+                sensed_waypoints.append(waypoint)
+
+        if len(sensed_waypoints) == 0:
+            return
+
+        msg = Waypoints(waypoints=sensed_waypoints)
+        self.sensed_waypoints_publisher.publish(msg)
+
+    def on_cmd(self, msg):
+        self.car.direction += msg.delta_direction
+
 
 def main(args=None):
     rclpy.init(args=args)
