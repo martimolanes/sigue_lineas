@@ -23,5 +23,6 @@ endif()
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Waypoint.msg"
+  "msg/SteeringCommand.msg"
 )
 ament_package()
