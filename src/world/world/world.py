@@ -1,5 +1,6 @@
 import rclpy
 from rclpy.node import Node
+import numpy as np
 
 from um_msgs.msg import Waypoints, Waypoint, CarPosition
 from world.car import Car
@@ -20,8 +21,17 @@ class World(Node):
         self.car_position_publisher = self.create_publisher(CarPosition, '/car_position', 10)
 
     def generate_waypoints(self):
-        for i in range(10):
-            self.points.append(Waypoint(x=0.0, y=i * 30.0))
+        width = 350
+        height = 150
+
+        steps = 30
+        angle_step = 2.0 * np.pi / steps
+
+        for i in range(steps):
+            x = np.cos(angle_step * i) * width
+            y = np.sin(angle_step * i) * height
+
+            self.points.append(Waypoint(x=x, y=y, idx=i))
 
     def publish_waypoints(self):
         if self.waypoint_publisher.get_subscription_count() >= 1:
