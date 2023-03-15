@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'qt_gui'
+package_name = 'qt_interface'
 
 setup(
     name=package_name,
@@ -20,6 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'interface = qt_interface.main:main'
         ],
     },
 )
