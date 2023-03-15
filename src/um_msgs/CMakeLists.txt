@@ -25,5 +25,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Waypoint.msg"
   "msg/Waypoints.msg"
   "msg/SteeringCommand.msg"
+  "msg/CarPosition.msg"
 )
 ament_package()

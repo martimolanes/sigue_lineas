@@ -14,6 +14,8 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
+from qt_interface.communication import Message, INITIAL_WAYPOINT_CONFIG, UPDATE_CAR_POSITION
+
 class Car(QGraphicsRectItem):
     def __init__(self, width, height):
         super().__init__(0, 0, width, height)
@@ -21,11 +23,6 @@ class Car(QGraphicsRectItem):
         brush = QBrush(Qt.red)
         self.setBrush(brush)
         self.setTransformOriginPoint(self.boundingRect().center())
-        self.setRotation(60)
-
-    def update(self):
-        # self.setRotation(self.rotation() + 3)
-        self.move_forward(5, self.get_corners())
 
     def get_corners(self) -> list[tuple[float, float]]:
         x, y, width, height = self.boundingRect().getRect()
@@ -107,6 +104,7 @@ class CarTrack(QWidget):
 
         # Draw a Car
         car = Car(30, 30)
+        self.car = car
 
         # Add the items to the scene. Items are stacked in the order they are added.
         self.scene.addItem(car)
@@ -128,17 +126,30 @@ class CarTrack(QWidget):
 
         self.setLayout(hbox)
 
-    def initialize_waypoints(self, waypoints):
-        for waypoint in waypoints:
-            self.scene.addEllipse(waypoint.x, waypoint.y, 1, 1, self.waypoint_drawing_pen)
-
     def update(self):
         if not self.ros_queue.empty():
-            self.initialize_waypoints(self.ros_queue.get())
+            msg = self.ros_queue.get()
+            if msg.msg_type == INITIAL_WAYPOINT_CONFIG:
+                self.initialize_waypoints(msg.msg)
+            elif msg.msg_type == UPDATE_CAR_POSITION:
+                self.update_car_position(msg.msg)
 
         for item in self.scene.items():
             item.update()
 
+    def update_car_position(self, car_position):
+        x = int(car_position.x + self.scene.width() // 2)
+        y = int(-car_position.y + self.scene.height() // 2)
+
+        self.car.setX(x)
+        self.car.setY(y)
+        self.car.setRotation(int(car_position.direction))
+
+    def initialize_waypoints(self, waypoints):
+        for waypoint in waypoints:
+            x = waypoint.x + self.scene.width() // 2
+            y = -waypoint.y + self.scene.height() // 2
+            self.scene.addEllipse(x, y, 1, 1, self.waypoint_drawing_pen)
 
 def qt_main(in_queue):
     app = QApplication(sys.argv)
