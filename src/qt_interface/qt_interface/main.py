@@ -7,15 +7,11 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QBrush, QPainter, QPen, QColor
 from PyQt5.QtWidgets import (
     QApplication,
-    QGraphicsEllipseItem,
     QGraphicsItem,
     QGraphicsRectItem,
     QGraphicsScene,
     QGraphicsView,
     QHBoxLayout,
-    QPushButton,
-    QSlider,
-    QVBoxLayout,
     QWidget,
 )
 
@@ -142,9 +138,6 @@ class CarTrack(QWidget):
     def update(self):
         for item in self.scene.items():
             item.update()
-
-def display():
-    print("Hello World")
 
 
 def main(args=None):
