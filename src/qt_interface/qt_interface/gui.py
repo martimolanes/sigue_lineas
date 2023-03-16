@@ -17,7 +17,7 @@ from PyQt5.QtWidgets import (
 from qt_interface.communication import Message, INITIAL_WAYPOINT_CONFIG, UPDATE_CAR_POSITION
 
 CAR_WIDTH = 20
-CAR_HEIGHT = 40
+CAR_HEIGHT = 20
 
 class Car(QGraphicsRectItem):
     def __init__(self, width, height):

@@ -18,12 +18,13 @@ class Driverless(Node):
         self.following_waypoint = None
 
     def on_sensed_waypoints(self, msg):
-        new_waypoint = None
         for waypoint in msg.waypoints:
-            if new_waypoint == None or waypoint.idx > new_waypoint.idx:
-                new_waypoint = waypoint
-
-        self.following_waypoint = new_waypoint
+            if self.following_waypoint == None:
+                self.following_waypoint = waypoint
+            elif self.following_waypoint.idx + 1 == waypoint.idx:
+                self.following_waypoint = waypoint
+            elif self.following_waypoint.idx == 29 and waypoint.idx == 0:
+                self.following_waypoint = waypoint
 
         idx = -1
         if self.following_waypoint:

@@ -1,7 +1,7 @@
 import numpy as np
 
 class Car:
-    def __init__(self, position=(0.0, 0.0), direction=0.5, velocity=1.0):
+    def __init__(self, position=(0.0, 0.0), direction=0.0, velocity=1.0):
         self.position = position
         self.direction = direction
         self.velocity = velocity
